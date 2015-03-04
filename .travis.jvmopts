@@ -1,6 +1,6 @@
 -Dfile.encoding=UTF8
--Xms2048M
--Xmx1024M
+-Xmx2048M
+-Xms1024M
 -Xss8M
 -XX:MaxPermSize=512M
 -XX:ReservedCodeCacheSize=256M
