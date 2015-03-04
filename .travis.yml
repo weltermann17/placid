@@ -1,24 +1,42 @@
+#
+# .travis.yml
+#
+
+sudo: false
+
 language: scala
 
+script:
+  # Build routines
+  - sbt ++$TRAVIS_SCALA_VERSION compile 
+
+  # Tricks to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+
+  - ls -altr
+  - du -hs .ivy* .m* .s*
+
 scala:
-   - 2.11.5
+  - 2.11.5
 
 jdk:
-   - oraclejdk8
+  - oraclejdk8
+  - oraclejdk7
 
-script:
-   - sbt ++$TRAVIS_SCALA_VERSION -jvm-opts .travis.jvmopts compile 
-
-   # Tricks to avoid unnecessary cache updates
-   - find $HOME/.sbt -name "*.lock" | xargs rm
-   - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
-   - du -hs $HOME/.*
-   - du -hs $HOME/*
+sbt_args:
+  -no-colors
+  -J-Xss8m
 
 cache:
   directories:
     - $HOME/.ivy2/cache
-    - $HOME/.sbt/boot/
+    - $HOME/.mvn/repository
+    - $HOME/.sbt/boot
 
-sudo: false
  
+notifications:
+  email: false
+
+# eof
+
