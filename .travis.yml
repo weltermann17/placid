@@ -3,6 +3,21 @@ language: scala
 scala:
    - 2.11.5
 
+jdk:
+   - openjdk7
+   - oraclejdk8
+
 script:
-   - sbt ++$TRAVIS_SCALA_VERSION -jvm-opts .travis.jvmopts clean update
+   - sbt ++$TRAVIS_SCALA_VERSION -jvm-opts .travis.jvmopts clean 
+
+   # Tricks to avoid unnecessary cache updates
+   - find $HOME/.sbt -name "*.lock" | xargs rm
+   - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot/
+
+sudo: false
  
