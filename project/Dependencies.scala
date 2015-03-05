@@ -125,6 +125,6 @@ object Dependencies {
 
   import Compile._
 
-  def util = apachecommons ++ compression ++ joda ++ reflection ++ camel ++ activemq
+  def util = apachecommons ++ compression ++ joda ++ reflection
 
 }

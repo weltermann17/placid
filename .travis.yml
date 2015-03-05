@@ -13,24 +13,19 @@ jdk:
   - oraclejdk8
   - oraclejdk7
 
-sbt_args:
-  -no-colors
-  -J-Xss8m
-
 cache:
   directories:
     - $HOME/.ivy2/cache
     - $HOME/.mvn/repository
     - $HOME/.m2/repository
     - $HOME/.sbt/boot
-
  
 notifications:
   email: false
 
 script:
   # Build routines
-  - sbt ++$TRAVIS_SCALA_VERSION package test
+  - sbt ++$TRAVIS_SCALA_VERSION -J-Xss8m package test
 
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
