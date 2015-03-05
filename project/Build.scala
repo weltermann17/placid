@@ -1,6 +1,8 @@
 package placid
 
 import Dependencies._
+import Dependencies.Compile._
+import Dependencies.Compile.{ test ⇒ forTest }
 import Settings._
 
 import sbt._
@@ -13,8 +15,7 @@ object CompleteBuild
   def buildSettings = Seq(
     organization := "placid",
     scalaVersion := Dependencies.Versions.scalaVersion,
-    crossScalaVersions := Dependencies.Versions.crossScalaVersions,
-    ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet)
+    crossScalaVersions := Dependencies.Versions.crossScalaVersions)
 
   def defaultSettings = buildSettings ++ baseSettings
 
@@ -24,6 +25,6 @@ object CompleteBuild
   lazy val util = Project("placid-util", file("util"))
     .settings(defaultSettings: _*)
     .settings(Seq(version in ThisBuild := "0.0.1-SNAPSHOT"): _*)
-    .settings(libraryDependencies ++= Dependencies.util)
+    .settings(libraryDependencies ++= Dependencies.util ++ forTest(scalatest))
 
 }

@@ -28,6 +28,18 @@ object Dependencies {
 
     import Versions._
 
+    def compile(deps: Seq[ModuleID]): Seq[ModuleID] = deps map (_ % "compile")
+    
+    def provided(deps: Seq[ModuleID]): Seq[ModuleID] = deps map (_ % "provided")
+    
+    def optional(deps: Seq[ModuleID]): Seq[ModuleID] = deps map (_ % "optional")
+    
+    def test(deps: Seq[ModuleID]): Seq[ModuleID] = deps map (_ % "test")
+    
+    def runtime(deps: Seq[ModuleID]): Seq[ModuleID] = deps map (_ % "runtime")
+    
+    def container(deps: Seq[ModuleID]): Seq[ModuleID] = deps map (_ % "container")
+
     def config = Seq(
       "com.typesafe" % "config" % "1.2.1")
 
@@ -99,28 +111,20 @@ object Dependencies {
       "org.apache.activemq" % "activemq-jaas" % activemqVersion,
       "org.apache.activemq" % "activemq-kahadb-store" % activemqVersion)
 
-    object Test {
+    def scalatest = Seq(
+      "org.scalatest" %% "scalatest" % "2.2.4",
+      "org.scalacheck" %% "scalacheck" % "1.12.2")
 
-      def scalatest = Seq(
-        "org.scalatest" %% "scalatest" % "2.2.4" % "test",
-        "org.scalacheck" %% "scalacheck" % "1.12.2" % "test")
+    def oracleJdbc11 = Seq(
+      "com.oracle" % "ojdbc6" % "11.2.0.4")
 
-    }
-
-    object Provided {
-
-      def oracleJdbc11 = Seq(
-        "com.oracle" % "ojdbc6" % "11.2.0.4" % "optional;provided;test")
-
-      def microsoftJdbc4 = Seq(
-        "com.microsoft.sqlserver" % "sqljdbc4" % "4.0" % "optional;provided;test")
-
-    }
+    def microsoftJdbc4 = Seq(
+      "com.microsoft.sqlserver" % "sqljdbc4" % "4.0")
 
   }
 
   import Compile._
 
-  def util = apachecommons ++ compression ++ joda ++ reflection
+  def util = apachecommons ++ compression ++ joda ++ reflection ++ camel ++ activemq
 
 }
