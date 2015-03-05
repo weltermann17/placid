@@ -19,6 +19,7 @@ cache:
   directories:
     - $HOME/.ivy2/cache
     - $HOME/.mvn/repository
+    - $HOME/.m2/repository
     - $HOME/.sbt/boot
 
  
@@ -33,8 +34,10 @@ script:
   - find $HOME/.sbt -name "*.lock" | xargs rm
   - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
 
-  - find . -name ".jar" -ls
+  - find . -name "*.jar" -ls
   - cd $HOME
   - du -hs .ivy* .m* .s*
+  - find .m2 -ls
+  - find .mvn -ls
 
 # eof
