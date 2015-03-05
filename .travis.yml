@@ -6,17 +6,6 @@ sudo: false
 
 language: scala
 
-script:
-  # Build routines
-  - sbt ++$TRAVIS_SCALA_VERSION compile 
-
-  # Tricks to avoid unnecessary cache updates
-  - find $HOME/.sbt -name "*.lock" | xargs rm
-  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
-
-  - ls -altr
-  - du -hs .ivy* .m* .s*
-
 scala:
   - 2.11.5
 
@@ -24,19 +13,31 @@ jdk:
   - oraclejdk8
   - oraclejdk7
 
-sbt_args:
-  -no-colors
-  -J-Xss8m
+sbt_args: -no-colors -J-Xss8m
 
 cache:
   directories:
     - $HOME/.ivy2/cache
     - $HOME/.mvn/repository
+    - $HOME/.m2/repository
     - $HOME/.sbt/boot
 
  
 notifications:
   email: false
 
-# eof
+script:
+  # Build routines
+  - sbt ++$TRAVIS_SCALA_VERSION package 
 
+  # Tricks to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+
+  - find . -name "*.jar" -ls
+  - cd $HOME
+  - du -hs .ivy* .m* .s*
+  - find .m2 -ls
+  - find .mvn -ls
+
+# eof
