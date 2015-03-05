@@ -1,6 +1,7 @@
 package placid
 package util
 
+import java.io.{ PrintWriter, StringWriter }
 import java.nio.charset.StandardCharsets.{ US_ASCII, UTF_8 }
 
 import placid.util.text.HexifyString
@@ -13,21 +14,26 @@ import placid.util.text.HexifyString
 package object text {
 
   /**
-   * Just aliases for the most important charsets.
-   */
-  val utf8 = UTF_8
-
-  val `UTF-8` = utf8
-
-  val ascii = US_ASCII
-
-  val `US -ASCII` = ascii
-
-  /**
    * Implicit helper for HexifyString and more.
    */
   final implicit class RichString(s: String)
 
     extends HexifyString(s)
+
+  /**
+   * Add convenient helpers to Exceptions.
+   */
+  final implicit class RichThrowable(e: Throwable) {
+
+    /**
+     * Convert the stack trace to a string.
+     */
+    final def stackAsString: String = {
+      val s = new StringWriter(4096)
+      e.printStackTrace(new PrintWriter(s))
+      s.toString
+    }
+
+  }
 
 }
