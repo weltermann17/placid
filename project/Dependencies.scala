@@ -6,7 +6,7 @@ object Dependencies {
 
   object Versions {
 
-    def crossScalaVersions = Seq("2.11.5", "2.10.4")
+    def crossScalaVersions = Seq("2.11.6", "2.10.5")
 
     def scalaVersion = crossScalaVersions.head
 
@@ -70,6 +70,11 @@ object Dependencies {
       "net.jpountz.lz4" % "lz4" % "1.3.0",
       "net.lingala.zip4j" % "zip4j" % "1.3.2")
 
+    def codec = Seq(
+      "org.scodec" %% "scodec-core" % "1.7.0",
+      "org.scodec" %% "scodec-scalaz" % "1.0.0",
+      "org.scodec" %% "scodec-bits" % "1.0.5")
+
     def json = Seq(
       "org.json4s" %% "json4s-native" % "3.2.11",
       "org.json4s" %% "json4s-jackson" % "3.2.11",
@@ -127,4 +132,7 @@ object Dependencies {
 
   def util = apachecommons ++ compression ++ joda ++ reflection
 
+  def aio = codec ++ compression
+
 }
+

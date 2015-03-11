@@ -1,4 +1,3 @@
-package placid
 package util
 package text
 
@@ -10,7 +9,9 @@ import java.nio.charset.StandardCharsets.UTF_8
  * Convert from and to a hexified version of the string's content.
  *
  */
-class HexifyString(s: String) {
+trait HexifyString {
+
+  protected[this] val s: String
 
   /**
    * Converts string to a hex string, the hex characters are all uppercase; it is case sensitive.

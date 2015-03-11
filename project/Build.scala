@@ -13,18 +13,22 @@ object CompleteBuild
     extends Build {
 
   def buildSettings = Seq(
-    organization := "placid",
+    organization := "pleasant",
     scalaVersion := Dependencies.Versions.scalaVersion,
     crossScalaVersions := Dependencies.Versions.crossScalaVersions)
 
   def defaultSettings = buildSettings ++ baseSettings
 
   lazy val root = Project("root", file("."))
-    .aggregate(util)
+    .aggregate(aio, util)
 
-  lazy val util = Project("placid-util", file("util"))
+  lazy val aio = Project("pleasant-aio", file("aio"))
     .settings(defaultSettings: _*)
-    .settings(Seq(version in ThisBuild := "0.0.1-SNAPSHOT"): _*)
+    .settings(libraryDependencies ++= Dependencies.aio ++ forTest(scalatest))
+
+  lazy val util = Project("pleasant-util", file("util"))
+    .settings(defaultSettings: _*)
     .settings(libraryDependencies ++= Dependencies.util ++ forTest(scalatest))
+
 
 }

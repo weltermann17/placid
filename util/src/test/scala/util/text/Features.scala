@@ -1,4 +1,3 @@
-package placid
 package util
 package text
 
