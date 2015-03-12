@@ -33,7 +33,7 @@ final class PingPongServer {
   private[this] final val context = ExecutionContextExecutorServiceBridge(global)
 
   private[this] final val server = AsynchronousServerSocketChannel
-    .open // (AsynchronousChannelGroup.withFixedThreadPool(1, Executors.defaultThreadFactory))
+    .open(AsynchronousChannelGroup.withThreadPool(context))
     .setOption(StandardSocketOptions.SO_REUSEADDR, Boolean.box(true))
     .setOption(StandardSocketOptions.SO_RCVBUF, Integer.valueOf(64 * 1024))
     .bind(new InetSocketAddress("127.0.0.1", 8080), 10000)
