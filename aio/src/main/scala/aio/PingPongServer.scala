@@ -67,8 +67,6 @@ final class PingPongServer {
 
         @inline def completed(processed: Integer, a: Null) = {
 
-          println(s"read processed : $processed")
-
           if (1920 == processed.intValue) {
             writebuffer.rewind
             socket.write(writebuffer, null: Null, writehandler)
