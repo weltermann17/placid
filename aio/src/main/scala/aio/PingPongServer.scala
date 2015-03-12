@@ -67,7 +67,7 @@ final class PingPongServer {
 
         @inline def completed(processed: Integer, a: Null) = {
 
-          if (1280 == processed.intValue) {
+          if (960 == processed.intValue) {
             writebuffer.rewind
             socket.write(writebuffer, null: Null, writehandler)
           } else {
@@ -107,7 +107,7 @@ Date: Wed, 11 Mar 2015 13:13:24 GMT
 
 pong""".getBytes
     val buf = ByteBuffer.allocateDirect(64 * 1024)
-    for (_ ← 1 to 32) buf.put(txt)
+    for (_ ← 1 to 24) buf.put(txt)
     buf.flip
     buf
   }
