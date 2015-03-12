@@ -57,7 +57,7 @@ final class PingPongServer {
 
       println(s"accept : $socket")
 
-      val readbuffer = ByteBuffer.allocateDirect(1024)
+      val readbuffer = ByteBuffer.allocateDirect(64 * 1024)
 
       val writebuffer = response.duplicate
 
