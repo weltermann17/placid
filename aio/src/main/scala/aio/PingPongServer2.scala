@@ -21,7 +21,7 @@ final class PingPongServer2 {
     .setOption(StandardSocketOptions.SO_RCVBUF, Integer.valueOf(defaultCapacity))
     .bind(new InetSocketAddress("127.0.0.1", 8080), 10000)
 
-  println(s"server started : $server")
+  println(s"server2 started : $server")
   server.accept(null: Null, accepthandler)
 
   private[this] object accepthandler extends CompletionHandler[AsynchronousSocketChannel, Null] {

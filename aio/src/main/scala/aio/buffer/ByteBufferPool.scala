@@ -1,9 +1,10 @@
 package aio
 package buffer
 
-import java.lang.Thread.{ `yield` ⇒ Yield }
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
+
+import scala.annotation.tailrec
 
 /**
  *
@@ -16,7 +17,7 @@ private class ByteBufferPool private (
 
     private[this] final val direct: Boolean) {
 
-  final def acquire: ByteBuffer = {
+  @tailrec final def acquire: ByteBuffer = {
     if (trylock) {
       try pool match {
         case head :: tail ⇒
@@ -26,18 +27,16 @@ private class ByteBufferPool private (
           newBuffer
       } finally unlock
     } else {
-      Yield
       acquire
     }
   }
 
-  final def release(buffer: ByteBuffer): Unit = {
+  @tailrec final def release(buffer: ByteBuffer): Unit = {
     if (trylock) try {
       buffer.clear
       pool = buffer :: pool
     } finally unlock
     else {
-      Yield
       release(buffer)
     }
   }
