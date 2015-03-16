@@ -54,7 +54,7 @@ private class ByteBufferPool private (
 
   private[this] final val locked = new AtomicBoolean(false)
 
-  private[this] final var pool: Vector[ByteBuffer] = (1 to poolsize).toVector.map(_ ⇒ newBuffer)
+  private[this] final var pool: List[ByteBuffer] = (1 to poolsize).toList.map(_ ⇒ newBuffer)
 
 }
 
