@@ -27,18 +27,18 @@ trait ChannelSourceConduit[C <: Channel]
 
   protected[this] val channel: C
 
-  def read: Future[ByteBuffer] = read(defaultCapacity)
+  final def read: Future[ByteBuffer] = read(defaultCapacity)
 
-  def read(capacity: Int): Future[ByteBuffer] = {
+  final def read(capacity: Int): Future[ByteBuffer] = {
     val buffer = acquireBuffer(capacity)
     val promise = Promise[ByteBuffer]
     object readhandler extends Handler[Integer, Null] {
-      def failed(e: Throwable, a: Null) = {
+      @inline def failed(e: Throwable, a: Null) = {
         buffer.release
         ignore(channel.close)
         promise.tryFailure(e)
       }
-      def completed(processed: Integer, a: Null) = {
+      @inline def completed(processed: Integer, a: Null) = {
         if (0 < processed.intValue) {
           buffer.flip
           promise.trySuccess(buffer)
@@ -64,15 +64,15 @@ trait ChannelSinkConduit[C <: Channel]
 
   protected[this] val channel: C
 
-  def write(buffer: ByteBuffer): Future[Unit] = {
+  final def write(buffer: ByteBuffer): Future[Unit] = {
     val promise = Promise[Unit]
     object writehandler extends Handler[Integer, Null] {
-      def failed(e: Throwable, a: Null) = {
+      @inline def failed(e: Throwable, a: Null) = {
         buffer.release
         ignore(channel.close)
         promise.tryFailure(e)
       }
-      def completed(processed: Integer, a: Null) = {
+      @inline def completed(processed: Integer, a: Null) = {
         if (0 < buffer.remaining) {
           channel.write(buffer, null: Null, writehandler)
         } else {
