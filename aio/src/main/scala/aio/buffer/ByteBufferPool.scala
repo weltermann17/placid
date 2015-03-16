@@ -20,7 +20,7 @@ private class ByteBufferPool private (
   @tailrec final def acquire: ByteBuffer = {
     if (trylock) {
       try pool match {
-        case head :: tail ⇒
+        case head +: tail ⇒
           pool = tail
           head
         case _ ⇒
@@ -34,7 +34,7 @@ private class ByteBufferPool private (
   @tailrec final def release(buffer: ByteBuffer): Unit = {
     if (trylock) try {
       buffer.clear
-      pool = buffer :: pool
+      pool = buffer +: pool
     } finally unlock
     else {
       release(buffer)
@@ -42,7 +42,7 @@ private class ByteBufferPool private (
   }
 
   /**
-   * Expensive.
+   * Maybe expensive.
    */
   final def size = pool.size
 
@@ -54,7 +54,7 @@ private class ByteBufferPool private (
 
   private[this] final val locked = new AtomicBoolean(false)
 
-  private[this] final var pool: List[ByteBuffer] = (1 to poolsize).toList.map(_ ⇒ newBuffer)
+  private[this] final var pool: Vector[ByteBuffer] = (1 to poolsize).toVector.map(_ ⇒ newBuffer)
 
 }
 
