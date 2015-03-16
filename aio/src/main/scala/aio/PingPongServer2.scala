@@ -38,10 +38,10 @@ final class PingPongServer2 {
         case Failure(e) ⇒ println(s"read failed : $e")
         case Success(buffer) ⇒
           if (buffer.remaining == 40 * constant) {
-            val writebuffer = ByteBufferPool.acquire(defaultCapacity)
-            writebuffer.put(response)
-            writebuffer.flip
-            s.write(writebuffer).onComplete {
+            buffer.clear
+            buffer.put(response)
+            buffer.flip
+            s.write(buffer).onComplete {
               case Failure(e) ⇒ println(s"write failed : $e")
               case Success(()) ⇒ s.read.onComplete(handler)
             }
@@ -69,6 +69,7 @@ pong""".getBytes
     buf.flip
     val arr = new Array[Byte](buf.remaining)
     buf.get(arr, 0, arr.length)
+    buf.release
     arr
   }
 
@@ -76,7 +77,7 @@ pong""".getBytes
 
 object PingPongServer2 extends App {
 
-  ByteBufferPool.create(defaultCapacity, 10000, true)
+  ByteBufferPool.create(defaultCapacity, 1000, true)
 
   new PingPongServer2
 

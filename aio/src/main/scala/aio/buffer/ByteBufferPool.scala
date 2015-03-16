@@ -40,8 +40,12 @@ private class ByteBufferPool private (
       Yield
       release(buffer)
     }
-
   }
+
+  /**
+   * Expensive.
+   */
+  final def size = pool.size
 
   @inline private[this] final def newBuffer: ByteBuffer = if (direct) ByteBuffer.allocateDirect(capacity) else ByteBuffer.allocate(capacity)
 
@@ -70,7 +74,7 @@ object ByteBufferPool {
     case _ ⇒
   }
 
-  def create(capacity: Int, poolsize: Int, direct: Boolean): Unit = pools ++ Map(capacity -> new ByteBufferPool(capacity, poolsize, direct))
+  def create(capacity: Int, poolsize: Int, direct: Boolean): Unit = pools = pools ++ Map(capacity -> new ByteBufferPool(capacity, poolsize, direct))
 
   private[this] final var pools: Map[Int, ByteBufferPool] = Map.empty
 
