@@ -9,57 +9,28 @@ import scala.util.{ Failure, Success, Try }
 
 import buffer.{ ByteBufferPool, defaultCapacity }
 import concurrent.Implicits.{ globalasynchronouschannelgroup, globalexecutioncontext }
-import conduit.SocketChannelConduit
+import conduit._
 
 /**
  *
  */
 final class PingPongServer2 {
 
-  private[this] final val server = AsynchronousServerSocketChannel
-    .open(globalasynchronouschannelgroup)
-    .setOption(StandardSocketOptions.SO_REUSEADDR, Boolean.box(true))
-    .setOption(StandardSocketOptions.SO_RCVBUF, Integer.valueOf(defaultCapacity))
-    .bind(new InetSocketAddress("127.0.0.1", 8080), 10000)
+  private[this] final val server = ServerSocketChannelConduit(new InetSocketAddress("127.0.0.1", 8080), 10000)
 
   println(s"server2 started : $server")
-  server.accept(null: Null, accepthandler)
+  def x: Future[Unit] = for {
+    c ← server.read
+    _ ← { println(c); h(c); x }
+  } yield ()
+  def h(c: SocketChannelConduit): Future[Unit] = for {
+    buffer ← c.read
+    _ ← { respond(buffer); c.write(buffer) }
+    _ ← h(c)
+  } yield ()
+  x
 
-  private[this] object accepthandler extends CompletionHandler[AsynchronousSocketChannel, Null] {
-
-    @inline def failed(e: Throwable, a: Null) = println(s"accept failed : $e")
-
-    @inline def completed(socket: AsynchronousSocketChannel, a: Null) = {
-      server.accept(null: Null, accepthandler)
-      println(s"accept : $socket")
-      val s = SocketChannelConduit(socket)
-      @inline def handler: Try[ByteBuffer] ⇒ Unit = {
-        case Failure(e) ⇒ println(s"read failed : $e")
-        case Success(buffer) ⇒
-          if (buffer.remaining == 40 * constant) {
-            buffer.clear
-            buffer.put(response)
-            buffer.flip
-            s.write(buffer).onComplete {
-              case Failure(e) ⇒ println(s"write failed : $e")
-              case Success(()) ⇒ s.read.onComplete(handler)
-            }
-          } else {
-            println(s"Partial read : ${buffer.remaining}")
-            socket.close
-          }
-      }
-      @inline def h: Future[Unit] = for {
-        buffer ← s.read
-        unit ← { buffer.clear; buffer.put(response); buffer.flip; s.write(buffer) }
-        _ ← h
-      } yield ()
-
-      h
-      // s.read.onComplete(handler)
-    }
-
-  }
+  @inline private[this] final def respond(buffer: ByteBuffer) = { buffer.clear; buffer.put(response); buffer.flip }
 
   private[this] final val constant = 48
 

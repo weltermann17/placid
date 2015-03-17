@@ -1,35 +1,31 @@
 package aio
 package conduit
 
-import java.nio.ByteBuffer
-
 import scala.concurrent.Future
 
-import buffer.defaultCapacity
+/**
+ *
+ */
+trait Conduit[A]
+
+  extends SourceConduit[A]
+
+  with SinkConduit[A]
 
 /**
  *
  */
-trait Conduit
+trait SourceConduit[A] {
 
-  extends SourceConduit
-
-  with SinkConduit
-
-/**
- *
- */
-trait SourceConduit {
-
-  def read(capacity: Int): Future[ByteBuffer]
+  def read: Future[A]
 
 }
 
 /**
  *
  */
-trait SinkConduit {
+trait SinkConduit[A] {
 
-  def write(buffer: ByteBuffer): Future[Unit]
+  def write(a: A): Future[Unit]
 
 }

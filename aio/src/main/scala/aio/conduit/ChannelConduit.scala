@@ -23,14 +23,12 @@ trait ChannelConduit[C <: Channel]
  */
 trait ChannelSourceConduit[C <: Channel]
 
-    extends SourceConduit {
+    extends ByteBufferSourceConduit {
 
   protected[this] val channel: C
 
-  @inline final def read: Future[ByteBuffer] = read(defaultCapacity)
-
-  final def read(capacity: Int): Future[ByteBuffer] = {
-    val buffer = acquire(capacity)
+  final def read: Future[ByteBuffer] = {
+    val buffer = acquire(defaultCapacity)
     val promise = Promise[ByteBuffer]
     object readhandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
@@ -60,7 +58,7 @@ trait ChannelSourceConduit[C <: Channel]
  */
 trait ChannelSinkConduit[C <: Channel]
 
-    extends SinkConduit {
+    extends ByteBufferSinkConduit {
 
   protected[this] val channel: C
 

@@ -15,6 +15,8 @@ final class SocketChannelConduit private (
 
     extends ChannelConduit[SocketChannel] {
 
+  final override def toString = channel.toString
+
 }
 
 /**
