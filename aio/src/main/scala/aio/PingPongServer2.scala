@@ -33,7 +33,7 @@ final class PingPongServer2 {
       server.accept(null: Null, accepthandler)
       println(s"accept : $socket")
       val s = SocketChannelConduit(socket)
-      def handler: Try[ByteBuffer] ⇒ Unit = {
+      @inline def handler: Try[ByteBuffer] ⇒ Unit = {
         case Failure(e) ⇒ println(s"read failed : $e")
         case Success(buffer) ⇒
           if (buffer.remaining == 40 * constant) {
@@ -55,8 +55,8 @@ final class PingPongServer2 {
         _ ← h
       } yield ()
 
-      // h
-      s.read.onComplete(handler)
+      h
+      // s.read.onComplete(handler)
     }
 
   }
