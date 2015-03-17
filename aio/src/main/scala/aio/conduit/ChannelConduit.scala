@@ -6,8 +6,8 @@ import java.nio.channels.{ AsynchronousByteChannel ⇒ Channel, CompletionHandle
 
 import scala.concurrent.{ Future, Promise }
 
-import buffer.{ ExpectedEOFException, RichByteBuffer, defaultCapacity }
-import buffer.ByteBufferPool.{ acquire ⇒ acquireBuffer }
+import buffer.{ RichByteBuffer, defaultCapacity }
+import buffer.ByteBufferPool.{ acquire, release }
 
 /**
  *
@@ -27,14 +27,14 @@ trait ChannelSourceConduit[C <: Channel]
 
   protected[this] val channel: C
 
-  final def read: Future[ByteBuffer] = read(defaultCapacity)
+  @inline final def read: Future[ByteBuffer] = read(defaultCapacity)
 
   final def read(capacity: Int): Future[ByteBuffer] = {
-    val buffer = acquireBuffer(capacity)
+    val buffer = acquire(capacity)
     val promise = Promise[ByteBuffer]
     object readhandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
-        buffer.release
+        release(buffer)
         ignore(channel.close)
         promise.tryFailure(e)
       }
@@ -43,7 +43,7 @@ trait ChannelSourceConduit[C <: Channel]
           buffer.flip
           promise.trySuccess(buffer)
         } else {
-          buffer.release
+          release(buffer)
           ignore(channel.close)
           promise.tryFailure(ExpectedEOFException)
         }
@@ -68,7 +68,7 @@ trait ChannelSinkConduit[C <: Channel]
     val promise = Promise[Unit]
     object writehandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
-        buffer.release
+        release(buffer)
         ignore(channel.close)
         promise.tryFailure(e)
       }
@@ -76,7 +76,7 @@ trait ChannelSinkConduit[C <: Channel]
         if (0 < buffer.remaining) {
           channel.write(buffer, null: Null, writehandler)
         } else {
-          buffer.release
+          release(buffer)
           promise.trySuccess(())
         }
       }

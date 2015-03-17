@@ -1,7 +1,8 @@
 package aio
 
 import java.io.EOFException
-import java.nio.ByteBuffer
+
+import scala.util.control.NoStackTrace
 
 /**
  *
@@ -14,5 +15,18 @@ package object conduit {
    * Swallow any exception that might get thrown in @param p and ignore it.
    */
   @inline final def ignore(p: ⇒ Any) = try p catch { case _: Throwable ⇒ }
+
+  /**
+   * Thrown when a peer closes a socket connection.
+   */
+  object ExpectedEOFException
+
+      extends EOFException
+
+      with NoStackTrace {
+
+    override final def toString = "ExpectedEOFException"
+
+  }
 
 }

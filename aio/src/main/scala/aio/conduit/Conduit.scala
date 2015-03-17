@@ -21,7 +21,7 @@ trait Conduit
  */
 trait SourceConduit {
 
-  def read(capacity: Int = defaultCapacity): Future[ByteBuffer]
+  def read(capacity: Int): Future[ByteBuffer]
 
 }
 

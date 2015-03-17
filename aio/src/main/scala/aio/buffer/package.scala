@@ -1,6 +1,5 @@
 package aio
 
-import java.io.EOFException
 import java.nio.ByteBuffer
 
 /**
@@ -17,16 +16,11 @@ package object buffer {
 
     private[this] final val buffer: ByteBuffer)
 
-      extends PooledByteBuffer(buffer)
+      extends DumpByteBuffer(buffer)
 
   /**
    *
    */
   final val defaultCapacity = 64 * 1024
-
-  /**
-   *
-   */
-  object ExpectedEOFException extends EOFException
 
 }

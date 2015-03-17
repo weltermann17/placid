@@ -4,9 +4,10 @@ import java.net.{ InetSocketAddress, StandardSocketOptions }
 import java.nio.ByteBuffer
 import java.nio.channels.{ AsynchronousServerSocketChannel, AsynchronousSocketChannel, CompletionHandler }
 
+import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
 
-import buffer.{ defaultCapacity, RichByteBuffer, ByteBufferPool }
+import buffer.{ ByteBufferPool, defaultCapacity }
 import concurrent.Implicits.{ globalasynchronouschannelgroup, globalexecutioncontext }
 import conduit.SocketChannelConduit
 
@@ -29,10 +30,8 @@ final class PingPongServer2 {
     @inline def failed(e: Throwable, a: Null) = println(s"accept failed : $e")
 
     @inline def completed(socket: AsynchronousSocketChannel, a: Null) = {
-
       server.accept(null: Null, accepthandler)
       println(s"accept : $socket")
-
       val s = SocketChannelConduit(socket)
       def handler: Try[ByteBuffer] ⇒ Unit = {
         case Failure(e) ⇒ println(s"read failed : $e")
@@ -46,9 +45,17 @@ final class PingPongServer2 {
               case Success(()) ⇒ s.read.onComplete(handler)
             }
           } else {
+            println(s"Partial read : ${buffer.remaining}")
             socket.close
           }
       }
+      @inline def h: Future[Unit] = for {
+        buffer ← s.read
+        unit ← { buffer.clear; buffer.put(response); buffer.flip; s.write(buffer) }
+        _ ← h
+      } yield ()
+
+      // h
       s.read.onComplete(handler)
     }
 
@@ -69,7 +76,7 @@ pong""".getBytes
     buf.flip
     val arr = new Array[Byte](buf.remaining)
     buf.get(arr, 0, arr.length)
-    buf.release
+    ByteBufferPool.release(buf)
     arr
   }
 

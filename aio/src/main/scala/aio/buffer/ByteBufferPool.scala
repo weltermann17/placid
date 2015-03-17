@@ -22,9 +22,10 @@ private class ByteBufferPool private (
       try pool match {
         case head +: tail ⇒
           pool = tail
+          head.clear
           head
         case _ ⇒
-          newBuffer
+          newbuffer
       } finally unlock
     } else {
       acquire
@@ -33,7 +34,6 @@ private class ByteBufferPool private (
 
   @tailrec final def release(buffer: ByteBuffer): Unit = {
     if (trylock) try {
-      buffer.clear
       pool = buffer +: pool
     } finally unlock
     else {
@@ -42,11 +42,23 @@ private class ByteBufferPool private (
   }
 
   /**
+   * Potentially expensive method to check if a ByteBuffer has already been released back into the pool.
+   */
+  @tailrec final def find(buffer: ByteBuffer): Boolean = {
+    if (trylock) try {
+      pool.exists(_ eq buffer)
+    } finally unlock
+    else {
+      find(buffer)
+    }
+  }
+
+  /**
    * Maybe expensive.
    */
   final def size = pool.size
 
-  @inline private[this] final def newBuffer: ByteBuffer = if (direct) ByteBuffer.allocateDirect(capacity) else ByteBuffer.allocate(capacity)
+  @inline private[this] final def newbuffer: ByteBuffer = if (direct) ByteBuffer.allocateDirect(capacity) else ByteBuffer.allocate(capacity)
 
   @inline private[this] final def trylock = locked.compareAndSet(false, true)
 
@@ -54,7 +66,7 @@ private class ByteBufferPool private (
 
   private[this] final val locked = new AtomicBoolean(false)
 
-  private[this] final var pool: List[ByteBuffer] = (1 to poolsize).toList.map(_ ⇒ newBuffer)
+  private[this] final var pool: List[ByteBuffer] = (1 to poolsize).toList.map(_ ⇒ newbuffer)
 
 }
 
@@ -63,14 +75,22 @@ private class ByteBufferPool private (
  */
 object ByteBufferPool {
 
+  /**
+   *  Will return a cleared ByteBuffer of the given capacity.
+   */
   def acquire(capacity: Int): ByteBuffer = pools.get(capacity) match {
     case Some(pool) ⇒ pool.acquire
     case _ ⇒ ByteBuffer.allocate(capacity)
   }
 
-  private[buffer] def release(buffer: ByteBuffer): Unit = pools.get(buffer.capacity) match {
+  def release(buffer: ByteBuffer): Unit = pools.get(buffer.capacity) match {
     case Some(pool) ⇒ pool.release(buffer)
     case _ ⇒
+  }
+
+  def isReleased(buffer: ByteBuffer): Boolean = pools.get(buffer.capacity) match {
+    case Some(pool) ⇒ pool.find(buffer)
+    case _ ⇒ false
   }
 
   def create(capacity: Int, poolsize: Int, direct: Boolean): Unit = pools = pools ++ Map(capacity -> new ByteBufferPool(capacity, poolsize, direct))

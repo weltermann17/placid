@@ -9,7 +9,7 @@ import scala.math.min
 /**
  *
  */
-class PooledByteBuffer(
+class DumpByteBuffer(
 
     private[this] final val buffer: ByteBuffer) {
 
@@ -19,26 +19,22 @@ class PooledByteBuffer(
     val builder = new StringBuilder(min(buffer.remaining, length) * 5)
     builder.append(s"${buffer}\n")
     if (buffer.hasArray) {
-      PooledByteBuffer.dump(builder, buffer.array, buffer.position, min(buffer.remaining, length))
+      DumpByteBuffer.dump(builder, buffer.array, buffer.position, min(buffer.remaining, length))
     } else {
       val a = new Array[Byte](buffer.position + buffer.remaining)
       val p = buffer.position
       buffer.get(a, p, buffer.remaining)
       buffer.position(p)
-      PooledByteBuffer.dump(builder, a, buffer.position, min(buffer.remaining, length))
+      DumpByteBuffer.dump(builder, a, buffer.position, min(buffer.remaining, length))
     }
   }
-
-  final def release: Unit = if (released.compareAndSet(false, true)) ByteBufferPool.release(buffer)
-
-  private[this] final val released = new AtomicBoolean(false)
 
 }
 
 /**
  *
  */
-object PooledByteBuffer {
+object DumpByteBuffer {
 
   final def dump(builder: StringBuilder, array: Array[Byte], offset: Int, length: Int): String = try {
     val HEXCHAR = Array[Char]('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
