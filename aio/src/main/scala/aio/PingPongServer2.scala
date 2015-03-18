@@ -5,9 +5,11 @@ import java.nio.ByteBuffer
 
 import scala.concurrent.Future
 
-import buffer.{ ByteBufferPool, ByteResult, defaultCapacity }
+import aio.buffer.ByteResult.asByteBuffer
+import buffer.{ ByteBufferPool, defaultCapacity }
 import concurrent.Implicits.globalexecutioncontext
 import conduit.{ ServerSocketChannelConduit, SocketChannelConduit }
+import conduit.FileConduit.{ forWriting, forReading, string2path }
 
 /**
  *
@@ -57,6 +59,15 @@ object PingPongServer2 extends App {
   ByteBufferPool.create(defaultCapacity, 1000, true)
 
   new PingPongServer2
+
+  val in = forReading("/tmp/test.in")
+  val out = forWriting("/tmp/test.out")
+  def f: Future[Unit] = for {
+    byteresult ← in.read
+    _ ← out.write(byteresult)
+    _ ← f
+  } yield ()
+  f
 
   Thread.sleep(10 * 60 * 1000)
 

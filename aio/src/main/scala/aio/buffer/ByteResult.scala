@@ -17,7 +17,7 @@ final class ByteResult private (
 
   final def release: Unit = if (isreleased.compareAndSet(false, true)) ByteBufferPool.release(buffer)
 
-  override final def toString = s"ByteResult(buffer = $buffer, isLast = $isLast)"
+  override final def toString = s"ByteResult(buffer = $buffer, isLast = $isLast, isReleased = $isreleased)"
 
   @inline private final def asByteBuffer = buffer
 

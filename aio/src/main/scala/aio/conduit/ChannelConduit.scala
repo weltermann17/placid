@@ -30,7 +30,6 @@ trait ChannelSourceConduit[C <: Channel]
     val promise = Promise[ByteResult]
     object readhandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
-        println(s"read failed : $e")
         cleanup
         promise.tryFailure(e)
       }
@@ -65,11 +64,13 @@ trait ChannelSinkConduit[C <: Channel]
 
   final def write(byteresult: ByteResult): Future[Unit] = {
     val promise = Promise[Unit]
+    @inline def cleanup = {
+      byteresult.release
+      ignore(channel.close)
+    }
     object writehandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
-        println(s"write failed : $e $byteresult")
-        byteresult.release
-        ignore(channel.close)
+        cleanup
         promise.tryFailure(e)
       }
       @inline def completed(processed: Integer, a: Null) = {
@@ -82,6 +83,7 @@ trait ChannelSinkConduit[C <: Channel]
       }
     }
     if (byteresult.isLast) {
+      cleanup
       promise.success(()).future
     } else {
       channel.write(byteresult, null: Null, writehandler)
