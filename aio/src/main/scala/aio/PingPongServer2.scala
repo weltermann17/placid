@@ -1,36 +1,35 @@
 package aio
 
-import java.net.{ InetSocketAddress, StandardSocketOptions }
+import java.net.InetSocketAddress
 import java.nio.ByteBuffer
-import java.nio.channels.{ AsynchronousServerSocketChannel, AsynchronousSocketChannel, CompletionHandler }
 
 import scala.concurrent.Future
-import scala.util.{ Failure, Success, Try }
 
-import buffer.{ ByteBufferPool, defaultCapacity }
-import concurrent.Implicits.{ globalasynchronouschannelgroup, globalexecutioncontext }
-import conduit._
+import buffer.{ ByteBufferPool, ByteResult, defaultCapacity }
+import concurrent.Implicits.globalexecutioncontext
+import conduit.{ ServerSocketChannelConduit, SocketChannelConduit }
 
 /**
  *
  */
 final class PingPongServer2 {
 
-  private[this] final val server = ServerSocketChannelConduit(new InetSocketAddress("127.0.0.1", 8080), 10000)
+  private[this] final val server = ServerSocketChannelConduit(new InetSocketAddress("127.0.0.1", 8080))
 
-  println(s"server2 started : $server")
-  def x: Future[Unit] = for {
-    c ← server.read
-    _ ← { println(c); h(c); x }
-  } yield ()
-  def h(c: SocketChannelConduit): Future[Unit] = for {
-    buffer ← c.read
-    _ ← { respond(buffer); c.write(buffer) }
-    _ ← h(c)
-  } yield ()
-  x
-
-  @inline private[this] final def respond(buffer: ByteBuffer) = { buffer.clear; buffer.put(response); buffer.flip }
+  {
+    println(s"server2 started : $server")
+    def respond(buffer: ByteBuffer) = if (0 < buffer.capacity) { buffer.clear; buffer.put(response); buffer.flip }
+    def x: Future[Unit] = for {
+      c ← server.read
+      _ ← { println(c); h(c); x }
+    } yield ()
+    def h(c: SocketChannelConduit): Future[Unit] = for {
+      byteresult ← c.read
+      _ ← { respond(byteresult); c.write(byteresult) }
+      _ ← h(c)
+    } yield ()
+    x
+  }
 
   private[this] final val constant = 48
 

@@ -1,13 +1,11 @@
 package aio
 package conduit
 
-import java.nio.ByteBuffer
 import java.nio.channels.{ AsynchronousByteChannel ⇒ Channel, CompletionHandler ⇒ Handler }
 
 import scala.concurrent.{ Future, Promise }
 
-import buffer.{ RichByteBuffer, defaultCapacity }
-import buffer.ByteBufferPool.{ acquire, release }
+import buffer.ByteResult
 
 /**
  *
@@ -23,31 +21,34 @@ trait ChannelConduit[C <: Channel]
  */
 trait ChannelSourceConduit[C <: Channel]
 
-    extends ByteBufferSourceConduit {
+    extends ByteResultSourceConduit {
 
   protected[this] val channel: C
 
-  final def read: Future[ByteBuffer] = {
-    val buffer = acquire(defaultCapacity)
-    val promise = Promise[ByteBuffer]
+  final def read: Future[ByteResult] = {
+    val byteresult = ByteResult.default
+    val promise = Promise[ByteResult]
     object readhandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
-        release(buffer)
-        ignore(channel.close)
+        println(s"read failed : $e")
+        cleanup
         promise.tryFailure(e)
       }
       @inline def completed(processed: Integer, a: Null) = {
         if (0 < processed.intValue) {
-          buffer.flip
-          promise.trySuccess(buffer)
+          byteresult.flip
+          promise.trySuccess(byteresult)
         } else {
-          release(buffer)
-          ignore(channel.close)
-          promise.tryFailure(ExpectedEOFException)
+          cleanup
+          promise.trySuccess(ByteResult.sentinel)
         }
       }
+      @inline def cleanup: Unit = {
+        byteresult.release
+        ignore(channel.close)
+      }
     }
-    channel.read(buffer, null: Null, readhandler)
+    channel.read(byteresult, null: Null, readhandler)
     promise.future
   }
 
@@ -58,29 +59,34 @@ trait ChannelSourceConduit[C <: Channel]
  */
 trait ChannelSinkConduit[C <: Channel]
 
-    extends ByteBufferSinkConduit {
+    extends ByteResultSinkConduit {
 
   protected[this] val channel: C
 
-  final def write(buffer: ByteBuffer): Future[Unit] = {
+  final def write(byteresult: ByteResult): Future[Unit] = {
     val promise = Promise[Unit]
     object writehandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
-        release(buffer)
+        println(s"write failed : $e $byteresult")
+        byteresult.release
         ignore(channel.close)
         promise.tryFailure(e)
       }
       @inline def completed(processed: Integer, a: Null) = {
-        if (0 < buffer.remaining) {
-          channel.write(buffer, null: Null, writehandler)
+        if (0 < byteresult.remaining) {
+          channel.write(byteresult, null: Null, writehandler)
         } else {
-          release(buffer)
+          byteresult.release
           promise.trySuccess(())
         }
       }
     }
-    channel.write(buffer, null: Null, writehandler)
-    promise.future
+    if (byteresult.isLast) {
+      promise.success(()).future
+    } else {
+      channel.write(byteresult, null: Null, writehandler)
+      promise.future
+    }
   }
 
 }
