@@ -6,15 +6,6 @@ import scala.concurrent.Future
 /**
  *
  */
-trait Conduit[A]
-
-  extends SourceConduit[A]
-
-  with SinkConduit[A]
-
-/**
- *
- */
 trait SourceConduit[A] {
 
   def read: Future[A]

@@ -30,6 +30,7 @@ trait ChannelSourceConduit[C <: Channel]
     val promise = Promise[ByteResult]
     object readhandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
+        println(s"read failed : $e")
         cleanup
         promise.tryFailure(e)
       }
@@ -70,6 +71,7 @@ trait ChannelSinkConduit[C <: Channel]
     }
     object writehandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
+        println(s"write failed: $e")
         cleanup
         promise.tryFailure(e)
       }

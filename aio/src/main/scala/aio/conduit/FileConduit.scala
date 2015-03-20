@@ -10,41 +10,48 @@ import java.nio.file.StandardOpenOption.{ APPEND, CREATE, READ, TRUNCATE_EXISTIN
 
 import scala.collection.JavaConversions.setAsJavaSet
 import scala.language.implicitConversions
+import scala.concurrent.{ Future, Promise }
 
 import concurrent.Implicits.globalexecutioncontext
 
 /**
  *
  */
-final class FileConduit private (
+final class FileSourceConduit private[conduit] (
 
   protected[this] final val channel: FileChannelWrapper)
 
     extends ChannelSourceConduit[FileChannelWrapper]
 
-    with ChannelSinkConduit[FileChannelWrapper]
+/**
+ *
+ */
+final class FileSinkConduit private[conduit] (
+
+  protected[this] final val channel: FileChannelWrapper)
+
+    extends ChannelSinkConduit[FileChannelWrapper]
 
 /**
  * Convenience constructors
  */
 object FileConduit {
 
-  private[this] def apply(filechannel: FileChannel, position: Long): FileConduit = new FileConduit(new FileChannelWrapper(filechannel, position))
+  private[this] def source(filechannel: FileChannel, position: Long): FileSourceConduit = new FileSourceConduit(new FileChannelWrapper(filechannel, position))
 
-  def forReading(path: Path): FileConduit = apply(FileChannel.open(path, Set(READ), globalexecutioncontext), 0L)
+  private[this] def sink(filechannel: FileChannel, position: Long): FileSinkConduit = new FileSinkConduit(new FileChannelWrapper(filechannel, position))
 
-  def forWriting(path: Path): FileConduit = apply(FileChannel.open(path, Set(CREATE, TRUNCATE_EXISTING, WRITE), globalexecutioncontext), 0L)
+  def forReading(path: Path): Future[FileSourceConduit] = Future { source(FileChannel.open(path, Set(READ), globalexecutioncontext), 0L) }
 
-  def forAppending(path: Path): FileConduit = apply(FileChannel.open(path, Set(CREATE, WRITE), globalexecutioncontext), if (exists(path)) size(path) else 0L)
+  def forAppending(path: Path): FileSinkConduit = sink(FileChannel.open(path, Set(CREATE, WRITE), globalexecutioncontext), if (exists(path)) size(path) else 0L)
 
-  /**
-   * This is very fast and should, therefore, be preferred, it also fails if there is not enough space in the file system.
-   */
-  def forWriting(path: Path, length: Long): FileConduit = {
+  def forWriting(path: Path): Future[FileSinkConduit] = Future { sink(FileChannel.open(path, Set(CREATE, TRUNCATE_EXISTING, WRITE), globalexecutioncontext), 0L) }
+
+  def forWriting(path: Path, length: Long): FileSinkConduit = {
     val f = new RandomAccessFile(path.toString, "rw")
     f.setLength(length)
     f.close
-    apply(FileChannel.open(path, Set(WRITE), globalexecutioncontext), 0L)
+    sink(FileChannel.open(path, Set(WRITE), globalexecutioncontext), 0L)
   }
 
   @inline implicit def file2path(file: File): Path = file.toPath

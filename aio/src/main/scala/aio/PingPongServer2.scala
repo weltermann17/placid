@@ -8,7 +8,7 @@ import scala.concurrent.Future
 import aio.buffer.ByteResult.asByteBuffer
 import buffer.{ ByteBufferPool, defaultCapacity }
 import concurrent.Implicits.globalexecutioncontext
-import conduit.{ ServerSocketChannelConduit, SocketChannelConduit }
+import conduit.{ ServerSocketChannelConduit, SocketChannelConduit, loop }
 import conduit.FileConduit.{ forWriting, forReading, string2path }
 
 /**
@@ -20,18 +20,35 @@ final class PingPongServer2 {
 
   {
     println(s"server2 started : $server")
-    def respond(buffer: ByteBuffer) = if (0 < buffer.capacity) { buffer.clear; buffer.put(response); buffer.flip }
-    def x: Future[Unit] = for {
-      c ← server.read
-      _ ← { println(c); h(c); x }
-    } yield ()
-    def h(c: SocketChannelConduit): Future[Unit] = for {
-      byteresult ← c.read
-      _ ← { respond(byteresult); c.write(byteresult) }
-      _ ← h(c)
-    } yield ()
-    x
+    if (false) {
+      def x: Future[Unit] = for {
+        c ← server.read
+        _ ← { h(c); x }
+      } yield ()
+      def h(c: SocketChannelConduit): Future[Unit] = for {
+        byteresult ← c.read
+        _ ← { respond(byteresult); c.write(byteresult) }
+        _ ← h(c)
+      } yield ()
+      x
+    } else {
+      def h(c: SocketChannelConduit): Future[Unit] = for {
+        byteresult ← c.read
+        _ ← { println(byteresult); respond(byteresult); c.write(byteresult) }
+        _ ← h(c)
+      } yield ()
+      for {
+        _ ← loop {
+          for {
+            c ← server.read
+            _ ← h(c)
+          } yield ()
+        }
+      } yield ()
+    }
   }
+
+  private[this] final def respond(buffer: ByteBuffer) = if (0 < buffer.capacity) { buffer.clear; buffer.put(response); buffer.flip }
 
   private[this] final val constant = 48
 
@@ -60,14 +77,16 @@ object PingPongServer2 extends App {
 
   new PingPongServer2
 
-  val in = forReading("/tmp/test.in")
-  val out = forWriting("/tmp/test.out")
-  def f: Future[Unit] = for {
-    byteresult ← in.read
-    _ ← out.write(byteresult)
-    _ ← f
+  for {
+    in ← forReading("/tmp/test.in")
+    out ← forWriting("/tmp/test.out")
+    _ ← loop {
+      for {
+        b ← in.read
+        _ ← out.write(b)
+      } yield ()
+    }
   } yield ()
-  f
 
   Thread.sleep(10 * 60 * 1000)
 

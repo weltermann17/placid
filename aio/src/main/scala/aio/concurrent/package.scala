@@ -2,7 +2,7 @@ package aio
 
 import java.nio.channels.AsynchronousChannelGroup
 import java.util.Collections
-import java.util.concurrent.{ AbstractExecutorService, Executors, TimeUnit }
+import java.util.concurrent.{ AbstractExecutorService, Executors, ScheduledExecutorService, TimeUnit }
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.ExecutionContext
@@ -35,11 +35,11 @@ package object concurrent {
 
   object Implicits {
 
-    implicit final val globalexecutioncontext = ExecutionContextExecutorServiceBridge(global)
+    implicit final val globalexecutioncontext: ExecutionContextExecutorService = ExecutionContextExecutorServiceBridge(global)
 
-    implicit final val globalscheduledexecutor = Executors.newScheduledThreadPool(sys.runtime.availableProcessors)
+    implicit final val globalscheduledexecutor: ScheduledExecutorService = Executors.newScheduledThreadPool(2)
 
-    implicit final val globalasynchronouschannelgroup = AsynchronousChannelGroup.withThreadPool(globalexecutioncontext)
+    implicit final val globalasynchronouschannelgroup: AsynchronousChannelGroup = AsynchronousChannelGroup.withThreadPool(globalexecutioncontext)
 
   }
 }

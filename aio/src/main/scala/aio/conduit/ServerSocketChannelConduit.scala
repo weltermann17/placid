@@ -24,6 +24,7 @@ final class ServerSocketChannelConduit private (
         promise.tryFailure(e)
       }
       @inline def completed(socket: SocketChannel, a: Null) = {
+        println(s"server.read : $socket")
         promise.trySuccess(SocketChannelConduit(socket))
       }
     }
@@ -38,7 +39,7 @@ final class ServerSocketChannelConduit private (
  */
 object ServerSocketChannelConduit {
 
-  def apply(address: InetSocketAddress, backlog: Int = 10000): ServerSocketChannelConduit = apply(
+  def apply(address: InetSocketAddress, backlog: Int = 0): ServerSocketChannelConduit = apply(
     ServerSocketChannel
       .open(globalasynchronouschannelgroup)
       .setOption(StandardSocketOptions.SO_REUSEADDR, Boolean.box(true))

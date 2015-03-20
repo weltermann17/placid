@@ -6,15 +6,6 @@ import buffer.ByteResult
 /**
  *
  */
-trait ByteResultConduit
-
-  extends ByteResultSourceConduit
-
-  with ByteResultSinkConduit
-
-/**
- *
- */
 trait ByteResultSourceConduit
 
   extends SourceConduit[ByteResult]
