@@ -6,7 +6,7 @@ import java.nio.ByteBuffer
 import scala.concurrent.Future
 
 import aio.buffer.ByteResult.asByteBuffer
-import buffer.{ ByteBufferPool, defaultCapacity }
+import buffer.{ ByteResult, ByteBufferPool, defaultCapacity }
 import concurrent.Implicits.globalexecutioncontext
 import conduit.{ ServerSocketChannelConduit, SocketChannelConduit, loop }
 import conduit.FileConduit.{ forWriting, forReading, string2path }
@@ -20,7 +20,14 @@ final class PingPongServer2 {
 
   {
     println(s"server2 started : $server")
-    if (true) {
+
+    // ugly
+    // beauty
+    // snowwhite, wins
+
+    loop { server.read map { c ⇒ loop { c.read flatMap { b ⇒ c.write(respond(b)) } } } }
+
+    def ugly = {
       def x: Future[Unit] = for {
         c ← server.read
         _ ← { h(c); x }
@@ -31,24 +38,20 @@ final class PingPongServer2 {
         _ ← h(c)
       } yield ()
       x
-    } else {
-      def h(c: SocketChannelConduit): Future[Unit] = for {
-        byteresult ← c.read
-        _ ← { println(byteresult); respond(byteresult); c.write(byteresult) }
-        _ ← h(c)
-      } yield ()
+    }
+
+    def beauty = loop {
       for {
-        _ ← loop {
-          for {
-            c ← server.read
-            _ ← h(c)
-          } yield ()
-        }
+        c ← server.read
+        _ = loop { for { b ← c.read; _ ← c.write(respond(b)) } yield () }
       } yield ()
     }
+
+    def snowwhite = loop { server.read map { c ⇒ loop { c.read flatMap { b ⇒ c.write(respond(b)) } } } }
+
   }
 
-  private[this] final def respond(buffer: ByteBuffer) = if (0 < buffer.capacity) { buffer.clear; buffer.put(response); buffer.flip }
+  private[this] final def respond(b: ByteResult): ByteResult = { if (0 < b.capacity) { b.clear; b.put(response); b.flip }; b }
 
   private[this] final val constant = 48
 

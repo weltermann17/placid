@@ -31,6 +31,7 @@ trait ChannelSourceConduit[C <: Channel]
     val promise = Promise[ByteResult]
     object readhandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
+        println(s"read failed: $e")
         cleanup
         promise.tryFailure(e)
       }
@@ -49,7 +50,7 @@ trait ChannelSourceConduit[C <: Channel]
       }
     }
     channel.read(byteresult, null: Null, readhandler)
-    promise.future recoverWith { case e ⇒ Future { println(s"read failed : $e"); null } }
+    promise.future
   }
 
 }
@@ -88,7 +89,7 @@ trait ChannelSinkConduit[C <: Channel]
       promise.success(()).future
     } else {
       channel.write(byteresult, null: Null, writehandler)
-      promise.future recover { case e ⇒ println(s"write failed: $e") }
+      promise.future
     }
   }
 

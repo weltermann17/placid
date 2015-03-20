@@ -24,7 +24,7 @@ final class ServerSocketChannelConduit private (
         promise.tryFailure(e)
       }
       @inline def completed(socket: SocketChannel, a: Null) = {
-        println(s"server.read : $socket")
+        println(s"accepted : $socket")
         promise.trySuccess(SocketChannelConduit(socket))
       }
     }
