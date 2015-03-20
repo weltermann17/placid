@@ -72,6 +72,7 @@ final class PingPongServer {
             socket.write(writebuffer, null: Null, writehandler)
           } else {
             socket.close
+            println(s"read only : $processed")
             println(s"closed : $socket")
           }
 
