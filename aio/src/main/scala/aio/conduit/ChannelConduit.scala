@@ -6,6 +6,7 @@ import java.nio.channels.{ AsynchronousByteChannel ⇒ Channel, CompletionHandle
 import scala.concurrent.{ Future, Promise }
 
 import buffer.ByteResult
+import concurrent.Implicits.globalexecutioncontext
 
 /**
  *
@@ -30,7 +31,6 @@ trait ChannelSourceConduit[C <: Channel]
     val promise = Promise[ByteResult]
     object readhandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
-        println(s"read failed : $e")
         cleanup
         promise.tryFailure(e)
       }
@@ -49,7 +49,7 @@ trait ChannelSourceConduit[C <: Channel]
       }
     }
     channel.read(byteresult, null: Null, readhandler)
-    promise.future
+    promise.future recoverWith { case e ⇒ Future { println(s"read failed : $e"); null } }
   }
 
 }
@@ -65,13 +65,8 @@ trait ChannelSinkConduit[C <: Channel]
 
   final def write(byteresult: ByteResult): Future[Unit] = {
     val promise = Promise[Unit]
-    @inline def cleanup = {
-      byteresult.release
-      ignore(channel.close)
-    }
     object writehandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
-        println(s"write failed: $e")
         cleanup
         promise.tryFailure(e)
       }
@@ -84,12 +79,16 @@ trait ChannelSinkConduit[C <: Channel]
         }
       }
     }
+    @inline def cleanup = {
+      byteresult.release
+      ignore(channel.close)
+    }
     if (byteresult.isLast) {
       cleanup
       promise.success(()).future
     } else {
       channel.write(byteresult, null: Null, writehandler)
-      promise.future
+      promise.future recover { case e ⇒ println(s"write failed: $e") }
     }
   }
 

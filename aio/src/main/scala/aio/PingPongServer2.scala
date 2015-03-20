@@ -20,7 +20,7 @@ final class PingPongServer2 {
 
   {
     println(s"server2 started : $server")
-    if (false) {
+    if (true) {
       def x: Future[Unit] = for {
         c ← server.read
         _ ← { h(c); x }
