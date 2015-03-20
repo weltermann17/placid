@@ -67,7 +67,7 @@ final class PingPongServer {
 
         @inline def completed(processed: Integer, a: Null) = {
 
-          if (1920 == processed.intValue) {
+          if (1920 == processed.intValue || 2160 == processed.intValue) {
             writebuffer.rewind
             socket.write(writebuffer, null: Null, writehandler)
           } else {
