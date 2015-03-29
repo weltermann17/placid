@@ -5,7 +5,7 @@ import java.net.StandardSocketOptions.{ SO_KEEPALIVE, SO_RCVBUF, SO_REUSEADDR, S
 import java.nio.ByteBuffer
 import java.nio.channels.{ AsynchronousChannelGroup, AsynchronousServerSocketChannel, AsynchronousSocketChannel, CompletionHandler }
 import java.util.Collections
-import java.util.concurrent.{ AbstractExecutorService, TimeUnit, Executors }
+import java.util.concurrent.{ AbstractExecutorService, TimeUnit }
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -28,14 +28,17 @@ object ExecutionContextExecutorServiceBridge {
   }
 }
 
-final class PingPongServer {
+/**
+ *
+ */
+final class BasicPingPongServer {
 
   private[this] final val context = ExecutionContextExecutorServiceBridge(global)
 
   private[this] final val server = AsynchronousServerSocketChannel
     .open(AsynchronousChannelGroup.withThreadPool(context))
     .setOption(StandardSocketOptions.SO_REUSEADDR, Boolean.box(true))
-    .setOption(StandardSocketOptions.SO_RCVBUF, Integer.valueOf(64 * 1024))
+    .setOption(StandardSocketOptions.SO_RCVBUF, Integer.valueOf(256 * 1024))
     .bind(new InetSocketAddress("127.0.0.1", 8080), 10000)
 
   println(s"server started : $server")
@@ -115,10 +118,11 @@ pong""".getBytes
 
 }
 
-object PingPongServer extends App {
+object BasicPingPongServer
 
-  new PingPongServer
+    extends App {
 
+  new BasicPingPongServer
   Thread.sleep(10 * 60 * 1000)
 
 }

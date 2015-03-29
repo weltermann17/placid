@@ -23,11 +23,11 @@ object CompleteBuild
     .aggregate(aio, util)
 
   lazy val aio = Project("pleasant-aio", file("aio"))
-    .settings(defaultSettings: _*)
+    .settings(defaultSettings)
     .settings(libraryDependencies ++= Dependencies.aio ++ forTest(scalatest))
 
   lazy val util = Project("pleasant-util", file("util"))
-    .settings(defaultSettings: _*)
+    .settings(defaultSettings)
     .settings(libraryDependencies ++= Dependencies.util ++ forTest(scalatest))
 
 

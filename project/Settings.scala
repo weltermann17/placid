@@ -26,6 +26,7 @@ object Settings {
     Seq.empty
 
   def compileSettings = Seq(
+    resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
     scalacOptions ++= Seq(
       "-g:vars",
       "-encoding", "UTF-8",

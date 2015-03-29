@@ -54,10 +54,6 @@ object Dependencies {
       "org.scala-lang" % "scala-reflect" % scalaVersion,
       "org.reflections" % "reflections" % "0.9.9")
 
-    def scalamodules = Seq(
-      "org.scala-lang.modules" %% "scala-xml" % "1.0.3",
-      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.3")
-
     def joda = Seq(
       "joda-time" % "joda-time" % "2.7")
 
@@ -82,18 +78,23 @@ object Dependencies {
       "com.fasterxml.jackson.core" % "jackson-databind" % "2.5.1",
       "com.sun.jersey" % "jersey-json" % "1.18.3")
 
+    def scalaz = Seq(
+      "org.scalaz" %% "scalaz-core" % "7.1.1",
+      "org.scalaz" %% "scalaz-concurrent" % "7.1.1",
+      "org.scalaz.stream" %% "scalaz-stream" % "0.7a")
+
     def slick = Seq(
       "com.typesafe.slick" %% "slick-extensions" % slickVersion,
       "com.typesafe.slick" %% "slick" % slickVersion)
 
-    def apachecommons = Seq(
-      "org.apache.commons" % "commons-lang3" % "3.3.2",
-      "org.apache.commons" % "commons-compress" % "1.9",
-      "org.apache.commons" % "commons-exec" % "1.2",
-      "commons-io" % "commons-io" % "2.4",
-      "commons-net" % "commons-net" % "3.3",
-      "commons-codec" % "commons-codec" % "1.10",
-      "org.apache.httpcomponents" % "httpclient" % "4.3.6")
+    // def apachecommons = Seq(
+    //   "org.apache.commons" % "commons-lang3" % "3.3.2",
+    //   "org.apache.commons" % "commons-compress" % "1.9",
+    //   "org.apache.commons" % "commons-exec" % "1.2",
+    //   "commons-io" % "commons-io" % "2.4",
+    //   "commons-net" % "commons-net" % "3.3",
+    //   "commons-codec" % "commons-codec" % "1.10",
+    //   "org.apache.httpcomponents" % "httpclient" % "4.3.6")
 
     def camel = Seq(
       "org.apache.camel" % "camel-core" % camelVersion,
@@ -130,9 +131,9 @@ object Dependencies {
 
   import Compile._
 
-  def util = apachecommons ++ compression ++ joda ++ reflection
+  def util = compression ++ joda ++ reflection
 
-  def aio = codec ++ compression
+  def aio = scalaz ++ codec ++ compression
 
 }
 

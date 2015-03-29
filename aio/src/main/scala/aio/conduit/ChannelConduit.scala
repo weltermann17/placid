@@ -6,7 +6,7 @@ import java.nio.channels.{ AsynchronousByteChannel ⇒ Channel, CompletionHandle
 import scala.concurrent.{ Future, Promise }
 
 import buffer.ByteResult
-import concurrent.Implicits.globalexecutioncontext
+import language.ignore
 
 /**
  *
@@ -31,7 +31,6 @@ trait ChannelSourceConduit[C <: Channel]
     val promise = Promise[ByteResult]
     object readhandler extends Handler[Integer, Null] {
       @inline def failed(e: Throwable, a: Null) = {
-        println(s"read failed: $e")
         cleanup
         promise.tryFailure(e)
       }
