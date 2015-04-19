@@ -2,6 +2,8 @@
 *.jar
 *.war
 *.log
+*.swp
+**/.DS_Store
 
 # sbt specific
 .cache/
