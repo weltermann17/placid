@@ -19,7 +19,7 @@ trait HexifyString {
   final def hexify(charset: Charset = UTF_8): String = {
     val bytes = s.getBytes(charset)
     val buf = new StringBuilder(2 * bytes.length)
-    var i = 0; while (i < bytes.length) { buf.append(hexarray(0xff & bytes(i))); i += 1 }
+    bytes.foreach { b ⇒ buf.append(hexarray(0xff & b)) }
     buf.toString
   }
 
@@ -30,10 +30,9 @@ trait HexifyString {
     val len = s.length / 2
     val buf = new Array[Byte](len)
     var i = 0
-    while (i < len) {
+    (0 until len).foreach { i ⇒
       val j = 2 * i
       buf(i) = ((Character.digit(s.charAt(j), 16) << 4) + Character.digit(s.charAt(j + 1), 16)).toByte
-      i += 1
     }
     new String(buf, charset)
   }
@@ -44,9 +43,8 @@ trait HexifyString {
   final def hexifyCrypted(charset: Charset = UTF_8): String = {
     val bytes = s.getBytes(charset)
     val buf = new StringBuilder(2 * bytes.length)
-    var i = 0; while (i < bytes.length) {
-      buf.append(hexcryptarray(((i & 15) << 8) + (0xff & bytes(i))))
-      i += 1
+    bytes.zipWithIndex.foreach {
+      case (b, i) ⇒ buf.append(hexcryptarray(((i & 15) << 8) + (0xff & b)))
     }
     buf.toString
   }
@@ -59,10 +57,9 @@ trait HexifyString {
     val buf = new StringBuilder(s.length)
     val len = s.length / 2
     var i = 0
-    while (i < len) {
+    (0 until len).foreach { i ⇒
       val j = 2 * i
       buf.append(hexarray(hexcryptarray.indexOf(h.substring(j, j + 2), (i & 15) << 8) & 255))
-      i += 1
     }
     buf.toString.unhexify(charset)
   }

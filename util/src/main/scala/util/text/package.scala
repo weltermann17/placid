@@ -1,8 +1,5 @@
 package util
 
-import java.io.{ PrintWriter, StringWriter }
-import java.nio.charset.StandardCharsets.{ US_ASCII, UTF_8 }
-
 /**
  *
  * Some convenient helpers for string handling.
