@@ -43,10 +43,12 @@ object p extends App {
   private[this] final val failure: Array[Int] = {
     val failure = new Array[Int](pattern.length)
     var j = 0
-    for (i ← 1 until pattern.length) {
+    var i = 1
+    while (i < pattern.length) {
       while (j > 0 && pattern(j) != pattern(i)) j = failure(j - 1)
       if (pattern(j) == pattern(i)) j += 1
       failure(i) = j
+      i += 1
     }
     failure
   }

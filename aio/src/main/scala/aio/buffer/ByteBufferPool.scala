@@ -53,8 +53,10 @@ private class ByteBufferPool private (
     }
   }
 
+  final def releaseSafely(buffer: ByteBuffer) = if (find(buffer)) false else release(buffer)
+
   /**
-   * Maybe expensive.
+   * Maybe expensive as it is O(n) and not thread-safe.
    */
   final def size = pool.size
 
@@ -64,9 +66,9 @@ private class ByteBufferPool private (
 
   @inline private[this] final def unlock = locked.set(false)
 
-  private[this] final val locked = new AtomicBoolean(false)
+  @volatile private[this] final var pool: List[ByteBuffer] = (1 to poolsize).toList.map(_ ⇒ newbuffer)
 
-  private[this] final var pool: List[ByteBuffer] = (1 to poolsize).toList.map(_ ⇒ newbuffer)
+  private[this] final val locked = new AtomicBoolean(false)
 
 }
 

@@ -22,7 +22,7 @@ final class ConduitPingPongServer {
 
   private[this] final def respond(b: ByteResult): ByteResult = { if (0 < b.capacity) { b.clear; b.put(response); b.flip }; b }
 
-  private[this] final val constant = 1
+  private[this] final val constant = 48
 
   private[this] final val response: Array[Byte] = {
     val txt = """HTTP/1.1 200 OK
